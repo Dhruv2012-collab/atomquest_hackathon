@@ -3,6 +3,7 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { GoalSheetSchema, GoalSheetFormValues } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,7 +29,10 @@ import { submitGoalPlan } from "@/app/actions/goals";
 import { checkInGoal } from "@/app/actions/progress";
 import { useTransition, useState } from "react";
 
-import { GoalSheetSchema, type GoalSheetFormValues } from "@/lib/schemas";
+import { toast } from "sonner";
+import { Lock } from "lucide-react";
+
+import { ProgressExecutionView } from "./ProgressExecutionView";
 
 // Default empty goal template
 const defaultGoal = {
@@ -60,6 +64,10 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
       }))
     : [defaultGoal];
 
+  if (planStatus === "Approved") {
+    return <ProgressExecutionView goals={mappedInitialGoals} />;
+  }
+
   const form = useForm<GoalSheetFormValues>({
     resolver: zodResolver(GoalSheetSchema) as any,
     defaultValues: {
@@ -76,7 +84,8 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
   // Calculate current total weight to show user in real-time
   const watchGoals = form.watch("goals");
   const currentTotalWeight = watchGoals.reduce((sum, g) => sum + (Number(g.weight) || 0), 0);
-  const weightColor = currentTotalWeight === 100 ? "text-green-600" : "text-red-500";
+  const weightColor = currentTotalWeight === 100 ? "bg-green-500" : "bg-red-500 animate-pulse";
+  const textWeightColor = currentTotalWeight === 100 ? "text-green-600" : "text-red-500";
 
   const [isPending, startTransition] = useTransition();
   const [checkInState, setCheckInState] = useState<Record<string, {actual: number, status: string}>>({});
@@ -88,10 +97,9 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
     startTransition(async () => {
       const result = await checkInGoal(goalId, state.actual, state.status as any);
       if (result.success) {
-        alert("Check-in saved!");
-        // Usually we'd mutate or refresh data here. The server action revalidates the path.
+        toast.success("Check-in saved successfully!");
       } else {
-        alert("Error: " + result.error);
+        toast.error("Error: " + result.error);
       }
     });
   };
@@ -100,10 +108,10 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
     startTransition(async () => {
       const result = await submitGoalPlan(data);
       if (result.success) {
-        alert("Goals submitted successfully!");
-        form.reset({ goals: [defaultGoal] });
+        toast.success("Goals submitted successfully!");
+        // We'd typically redirect or update local state here
       } else {
-        alert("Error submitting goals: " + result.error);
+        toast.error("Error submitting goals: " + result.error);
         console.error(result.details);
       }
     });
@@ -113,6 +121,35 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         
+        {/* Top Contextual Metric Strip Zone */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <Card className="shadow-sm">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Goals</p>
+                <p className="text-2xl font-bold">{fields.length} <span className="text-sm font-normal text-muted-foreground">/ 8 Max</span></p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                {fields.length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-sm">
+            <CardContent className="p-4 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-muted-foreground">Cumulative Weight</p>
+                <p className={`text-xl font-bold ${textWeightColor}`}>{currentTotalWeight}%</p>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700 overflow-hidden">
+                <div 
+                  className={`h-2.5 rounded-full transition-all duration-500 ease-out ${weightColor}`} 
+                  style={{ width: `${Math.min(currentTotalWeight, 100)}%` }}
+                ></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Sticky Header Zone */}
         <div className="sticky top-0 z-10 flex items-center justify-between bg-background/95 pb-4 pt-2 backdrop-blur border-b">
           <div>
@@ -120,22 +157,9 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
             <p className="text-muted-foreground">Define your core objectives for the upcoming quarter.</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-medium">Total Weight</span>
-              <span className={`text-xl font-bold ${weightColor}`}>
-                {currentTotalWeight}% / 100%
-              </span>
-            </div>
-            {planStatus !== "Approved" && (
-              <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={currentTotalWeight !== 100 || fields.length > 8 || isPending}>
-                {isPending ? "Submitting..." : "Submit for Approval"}
-              </Button>
-            )}
-            {planStatus === "Approved" && (
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
-                Plan Approved (Check-in Mode)
-              </span>
-            )}
+            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={currentTotalWeight !== 100 || fields.length > 8 || isPending}>
+              {isPending ? "Submitting..." : "Submit Goal Sheet"}
+            </Button>
           </div>
         </div>
 
@@ -148,9 +172,11 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
 
         {/* Goal Cards Zone */}
         <div className="space-y-6">
-          {fields.map((field, index) => (
-            <Card key={field.id} className="relative shadow-sm">
-              <CardHeader className="pb-4">
+          {fields.map((field, index) => {
+            const isShared = form.watch(`goals.${index}.is_shared`);
+            return (
+              <Card key={field.id} className={`relative shadow-sm transition-all ${isShared ? "border-purple-200 bg-purple-50/30 shadow-purple-100" : ""}`}>
+                <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">
                     Goal #{index + 1}
@@ -261,64 +287,7 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
                       />
                     </div>
                     
-                    {/* Check-In UI for Approved Plans */}
-                    {planStatus === "Approved" && field.id && (
-                      <div className="mt-4 p-4 bg-blue-50/50 rounded-lg border border-blue-100">
-                        <h4 className="text-sm font-bold flex items-center text-blue-900 mb-3"><TrendingUp className="w-4 h-4 mr-2" /> Progress Check-In</h4>
-                        <div className="grid grid-cols-2 gap-4 items-end">
-                          <div>
-                            <FormLabel className="text-xs">Actual Achievement</FormLabel>
-                            <Input 
-                              type="number" 
-                              className="mt-1"
-                              placeholder="e.g. 50" 
-                              value={checkInState[mappedInitialGoals[index]?.id]?.actual || mappedInitialGoals[index]?.actual_value || 0}
-                              onChange={(e) => setCheckInState({
-                                ...checkInState, 
-                                [mappedInitialGoals[index]?.id]: { 
-                                  ...checkInState[mappedInitialGoals[index]?.id], 
-                                  actual: Number(e.target.value),
-                                  status: checkInState[mappedInitialGoals[index]?.id]?.status || "On Track"
-                                }
-                              })}
-                            />
-                          </div>
-                          <div>
-                            <FormLabel className="text-xs">Status</FormLabel>
-                            <Select 
-                              value={checkInState[mappedInitialGoals[index]?.id]?.status || mappedInitialGoals[index]?.status || "Not Started"}
-                              onValueChange={(val) => setCheckInState({
-                                ...checkInState, 
-                                [mappedInitialGoals[index]?.id]: { 
-                                  ...checkInState[mappedInitialGoals[index]?.id], 
-                                  actual: checkInState[mappedInitialGoals[index]?.id]?.actual || mappedInitialGoals[index]?.actual_value || 0,
-                                  status: val
-                                }
-                              })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Not Started">Not Started</SelectItem>
-                                <SelectItem value="On Track">On Track</SelectItem>
-                                <SelectItem value="Completed">Completed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <Button 
-                          type="button" 
-                          size="sm" 
-                          className="mt-4 w-full"
-                          disabled={isPending}
-                          onClick={() => handleCheckIn(mappedInitialGoals[index]?.id)}
-                        >
-                          <Check className="w-4 h-4 mr-2"/> Save Progress
-                        </Button>
-                      </div>
-                    )}
-                    
+
                   <FormField
                       control={form.control}
                       name={`goals.${index}.weight` as any}
@@ -338,24 +307,23 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         {/* Action Zone */}
-        {planStatus !== "Approved" && (
-          <div className="flex justify-center pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={() => append(defaultGoal)}
-              disabled={fields.length >= 8}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Another Goal ({fields.length}/8)
-            </Button>
-          </div>
-        )}
+        <div className="flex justify-center pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full md:w-auto"
+            onClick={() => append(defaultGoal)}
+            disabled={fields.length >= 8}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Another Goal ({fields.length}/8)
+          </Button>
+        </div>
 
       </form>
     </Form>
