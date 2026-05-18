@@ -22,16 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Trash2, TrendingUp, Check } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { submitGoalPlan } from "@/app/actions/goals";
 import { checkInGoal } from "@/app/actions/progress";
 import { useTransition, useState } from "react";
 
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
-
 import { ProgressExecutionView } from "./ProgressExecutionView";
 
 // Default empty goal template
@@ -84,32 +80,15 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
   // Calculate current total weight to show user in real-time
   const watchGoals = form.watch("goals");
   const currentTotalWeight = watchGoals.reduce((sum, g) => sum + (Number(g.weight) || 0), 0);
-  const weightColor = currentTotalWeight === 100 ? "bg-green-500" : "bg-red-500 animate-pulse";
-  const textWeightColor = currentTotalWeight === 100 ? "text-green-600" : "text-red-500";
+  const textWeightColor = currentTotalWeight === 100 ? "text-[#00d0ff]" : "text-[#00d0ff]";
 
   const [isPending, startTransition] = useTransition();
-  const [checkInState, setCheckInState] = useState<Record<string, {actual: number, status: string}>>({});
-
-  const handleCheckIn = (goalId: string) => {
-    const state = checkInState[goalId];
-    if (!state) return;
-    
-    startTransition(async () => {
-      const result = await checkInGoal(goalId, state.actual, state.status as any);
-      if (result.success) {
-        toast.success("Check-in saved successfully!");
-      } else {
-        toast.error("Error: " + result.error);
-      }
-    });
-  };
 
   function onSubmit(data: GoalSheetFormValues) {
     startTransition(async () => {
       const result = await submitGoalPlan(data);
       if (result.success) {
         toast.success("Goals submitted successfully!");
-        // We'd typically redirect or update local state here
       } else {
         toast.error("Error submitting goals: " + result.error);
         console.error(result.details);
@@ -119,53 +98,39 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         
-        {/* Top Contextual Metric Strip Zone */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Card className="shadow-sm">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Goals</p>
-                <p className="text-2xl font-bold">{fields.length} <span className="text-sm font-normal text-muted-foreground">/ 8 Max</span></p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                {fields.length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardContent className="p-4 flex flex-col justify-center">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-muted-foreground">Cumulative Weight</p>
-                <p className={`text-xl font-bold ${textWeightColor}`}>{currentTotalWeight}%</p>
-              </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700 overflow-hidden">
-                <div 
-                  className={`h-2.5 rounded-full transition-all duration-500 ease-out ${weightColor}`} 
-                  style={{ width: `${Math.min(currentTotalWeight, 100)}%` }}
-                ></div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sticky Header Zone */}
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-background/95 pb-4 pt-2 backdrop-blur border-b">
+        {/* Compact Action Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#222] pb-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Q1 2026 Goal Sheet</h2>
-            <p className="text-muted-foreground">Define your core objectives for the upcoming quarter.</p>
+            <h2 className="text-2xl font-bold text-slate-100">Goal Planning Workspace</h2>
+            <p className="text-sm font-medium text-slate-400 mt-1">Define measurable objectives for the current quarter.</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={currentTotalWeight !== 100 || fields.length > 8 || isPending}>
+          <div className="flex items-center gap-6 mt-4 md:mt-0">
+            <div className="text-right">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Allocation</p>
+              <p className={`text-xl font-bold ${textWeightColor}`}>{currentTotalWeight}/100%</p>
+            </div>
+            <Button 
+              type="button" 
+              onClick={form.handleSubmit(onSubmit)} 
+              disabled={currentTotalWeight !== 100 || fields.length > 8 || isPending}
+              className="bg-[#333] hover:bg-[#444] text-slate-200 font-semibold px-6 disabled:opacity-40"
+            >
               {isPending ? "Submitting..." : "Submit Goal Sheet"}
             </Button>
           </div>
         </div>
 
+        <div className="flex items-center gap-6 pb-2 text-sm font-bold text-slate-400">
+          <p>Total Goals: <span className="text-slate-100 ml-1">{fields.length} / 8</span></p>
+          <div className="h-4 w-px bg-[#333]"></div>
+          <p>Allocated Weight: <span className={`ml-1 ${textWeightColor}`}>{currentTotalWeight}%</span></p>
+        </div>
+
         {/* Form Global Errors */}
         {form.formState.errors.goals?.root && (
-          <div className="p-4 rounded-md bg-destructive/10 border border-destructive text-destructive">
+          <div className="p-4 rounded-md bg-red-900/20 border border-red-900/50 text-red-500">
             <p className="font-medium text-sm">{form.formState.errors.goals.root.message}</p>
           </div>
         )}
@@ -175,45 +140,42 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
           {fields.map((field, index) => {
             const isShared = form.watch(`goals.${index}.is_shared`);
             return (
-              <Card key={field.id} className={`relative shadow-sm transition-all ${isShared ? "border-purple-200 bg-purple-50/30 shadow-purple-100" : ""}`}>
-                <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
+              <div key={field.id} className={`relative rounded-xl border border-[#2a2a2a] bg-[#121212] p-6 shadow-sm transition-all`}>
+                
+                <div className="flex items-center justify-between mb-6">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#2a303a] px-3 py-1 text-xs font-bold text-[#7ca5d4]">
                     Goal #{index + 1}
-                    {form.watch(`goals.${index}.is_shared`) && (
-                      <span className="ml-3 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full uppercase font-bold tracking-wider">
-                        Shared Goal
-                      </span>
-                    )}
-                  </CardTitle>
-                  {fields.length > 1 && !form.watch(`goals.${index}.is_shared`) && (
-                    <Button
+                  </div>
+                  {fields.length > 1 && !isShared && (
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive -mr-2"
+                      className="text-slate-500 hover:text-red-400 transition"
                       onClick={() => remove(index)}
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   )}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   
-                  {/* Left Column: Core Definition */}
-                  <div className="md:col-span-7 space-y-4">
+                  {/* Left Column */}
+                  <div className="space-y-6">
                     <FormField
                       control={form.control}
                       name={`goals.${index}.title` as any}
                       render={({ field }: { field: any }) => (
                         <FormItem>
-                          <FormLabel>Title</FormLabel>
+                          <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Title</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Increase Q1 Pipeline Generation" disabled={field.value !== undefined && form.watch(`goals.${index}.is_shared`)} {...field} />
+                            <Input 
+                              placeholder="e.g. Increase Q1 Pipeline Generation" 
+                              disabled={field.value !== undefined && isShared} 
+                              className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100 focus-visible:ring-[#444]"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
                       )}
                     />
@@ -222,53 +184,63 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
                       name={`goals.${index}.description` as any}
                       render={({ field }: { field: any }) => (
                         <FormItem>
-                          <FormLabel>Description (Optional)</FormLabel>
+                          <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Description (Optional)</FormLabel>
                           <FormControl>
-                            {/* Fallback to Input if Textarea component isn't ready */}
-                            <Input placeholder="Brief details about how this will be achieved" disabled={form.watch(`goals.${index}.is_shared`)} {...field} />
+                            <Input 
+                              placeholder="Brief details about how this will be achieved" 
+                              disabled={isShared} 
+                              className="bg-[#1a1a1a] border-[#2a2a2a] text-white focus-visible:ring-[#444] min-h-[60px]"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
                       )}
                     />
                   </div>
 
-                  {/* Right Column: Metrics & Targets */}
-                  <div className="md:col-span-5 space-y-4 bg-muted/30 p-4 rounded-lg border">
+                  {/* Right Column */}
+                  <div className="space-y-6">
                     <FormField
                       control={form.control}
                       name={`goals.${index}.thrustArea` as any}
                       render={({ field }: { field: any }) => (
                         <FormItem>
-                          <FormLabel>Thrust Area</FormLabel>
+                          <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Thrust Area</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Revenue, Operations" disabled={form.watch(`goals.${index}.is_shared`)} {...field} />
+                            <Input 
+                              placeholder="e.g. Revenue, Operations" 
+                              disabled={isShared} 
+                              className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100 focus-visible:ring-[#444]"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
                       )}
                     />
+                    
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name={`goals.${index}.uom` as any}
                         render={({ field }: { field: any }) => (
                           <FormItem>
-                            <FormLabel>UoM Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={form.watch(`goals.${index}.is_shared`)}>
+                            <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">UoM Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isShared}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100 focus:ring-[#444]">
                                   <SelectValue placeholder="Select UoM" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
+                              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100">
                                 <SelectItem value="Numeric">Numeric (Min)</SelectItem>
                                 <SelectItem value="%">% (Min/Max)</SelectItem>
                                 <SelectItem value="Timeline">Timeline</SelectItem>
                                 <SelectItem value="Zero-based">Zero-based</SelectItem>
                               </SelectContent>
                             </Select>
-                            <FormMessage />
+                            <FormMessage className="text-red-500 text-xs" />
                           </FormItem>
                         )}
                       />
@@ -277,51 +249,57 @@ export function GoalWorkspaceForm({ initialGoals = [], planStatus = "Draft" }: {
                         name={`goals.${index}.target_value` as any}
                         render={({ field }: { field: any }) => (
                           <FormItem>
-                            <FormLabel>Target Value</FormLabel>
+                            <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Target Value</FormLabel>
                             <FormControl>
-                              <Input type="number" disabled={form.watch(`goals.${index}.is_shared`)} {...field} />
+                              <Input 
+                                type="number" 
+                                disabled={isShared} 
+                                className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100 focus-visible:ring-[#444]"
+                                {...field} 
+                              />
                             </FormControl>
-                            <FormMessage />
+                            <FormMessage className="text-red-500 text-xs" />
                           </FormItem>
                         )}
                       />
                     </div>
                     
-
-                  <FormField
+                    <FormField
                       control={form.control}
                       name={`goals.${index}.weight` as any}
                       render={({ field }: { field: any }) => (
                         <FormItem>
-                          <FormLabel>Weightage (%)</FormLabel>
+                          <FormLabel className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Weightage (%)</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input 
+                              type="number" 
+                              className="bg-[#1a1a1a] border-[#2a2a2a] text-slate-100 focus-visible:ring-[#444]"
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormDescription>Min 10%</FormDescription>
-                          <FormMessage />
+                          <FormDescription className="text-[10px] text-slate-500 italic mt-1 font-medium text-right">Min 10% required for valid goal entry</FormDescription>
+                          <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
                       )}
                     />
                   </div>
 
                 </div>
-              </CardContent>
-            </Card>
+              </div>
             );
           })}
         </div>
 
         {/* Action Zone */}
-        <div className="flex justify-center pt-4">
+        <div className="pt-2">
           <Button
             type="button"
-            variant="outline"
-            className="w-full md:w-auto"
+            className="w-full border border-dashed border-[#333] bg-[#0a0a0a] hover:bg-[#111] text-slate-400 hover:text-slate-100 font-bold tracking-widest uppercase text-xs py-6"
             onClick={() => append(defaultGoal)}
             disabled={fields.length >= 8}
           >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Another Goal ({fields.length}/8)
+            <Plus className="mr-2 h-4 w-4" />
+            Add Goal
           </Button>
         </div>
 

@@ -7,7 +7,9 @@ CREATE TYPE plan_status AS ENUM ('Draft', 'Pending_Approval', 'Approved', 'Rewor
 -- Core Tables
 CREATE TABLE departments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE users (
@@ -16,14 +18,18 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     role user_role DEFAULT 'Employee',
     manager_id UUID REFERENCES users(id),
-    dept_id UUID REFERENCES departments(id)
+    dept_id UUID REFERENCES departments(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE goal_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
     period TEXT NOT NULL, -- e.g. Q1 2026
-    status plan_status DEFAULT 'Draft'
+    status plan_status DEFAULT 'Draft',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE goals (
@@ -37,7 +43,9 @@ CREATE TABLE goals (
     weight NUMERIC NOT NULL CHECK (weight >= 10), -- BRD Min Weight Limit
     status goal_status DEFAULT 'Not Started',
     is_shared BOOLEAN DEFAULT FALSE,
-    primary_owner_id UUID REFERENCES users(id)
+    primary_owner_id UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- RLS setup (Enable RLS)

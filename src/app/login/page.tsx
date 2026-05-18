@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Target, CheckCircle2, TrendingUp, Users } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  AtSignIcon,
+  ChevronLeftIcon,
+  KeyIcon,
+} from 'lucide-react';
 
 const DEMO_CREDENTIALS = [
   { label: "Employee", email: "dave@company.com", role: "employee", href: "/employee/dashboard" },
   { label: "Manager", email: "sarah.manager@company.com", role: "manager", href: "/manager/dashboard" },
   { label: "Admin / HR", email: "admin@company.com", role: "admin", href: "/admin/dashboard" },
-];
-
-const FEATURES = [
-  { icon: Target, text: "Structured goal setting with weight enforcement" },
-  { icon: CheckCircle2, text: "Manager approval & review workflows" },
-  { icon: TrendingUp, text: "Quarterly check-ins & performance scoring" },
-  { icon: Users, text: "Shared departmental KPI alignment" },
 ];
 
 function routeForEmail(email: string): string {
@@ -27,7 +27,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -51,179 +50,224 @@ export default function LoginPage() {
     setTimeout(() => router.push(href), 700);
   };
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'MOCK_MS_AUTH_SUCCESS') {
+        const email = event.data.email;
+        setLoading(true);
+        setTimeout(() => {
+          router.push(routeForEmail(email));
+        }, 500);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [router]);
+
+  const handleOAuthLogin = () => {
+    const width = 450;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    window.open(
+      '/auth/microsoft-login',
+      'Microsoft Login',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+  };
+
   return (
-    <div className="min-h-screen flex bg-slate-50">
-      {/* ── Left Panel: Branding ── */}
-      <div className="hidden lg:flex lg:w-[52%] bg-[#1e3a5f] flex-col justify-between p-12 relative overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-blue-400 translate-x-32 -translate-y-32" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-indigo-400 -translate-x-24 translate-y-24" />
-        </div>
+    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 dark bg-black text-white">
+      <div className="bg-zinc-950 relative hidden h-full flex-col border-r border-zinc-800 p-10 lg:flex">
+        <div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
 
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">A</span>
-          </div>
-          <span className="text-white text-xl font-bold tracking-tight">AtomQuest</span>
+        <div className="z-10 mt-auto">
+          <blockquote className="space-y-2">
+            <p className="text-xl">
+              &ldquo;Trackerz has transformed how we set goals and track
+              performance across the entire enterprise.&rdquo;
+            </p>
+            <footer className="font-mono text-sm font-semibold">
+              ~ Internal Platform
+            </footer>
+          </blockquote>
         </div>
+        <div className="absolute inset-0">
+          <FloatingPaths position={1} />
+          <FloatingPaths position={-1} />
+        </div>
+      </div>
+      
+      <div className="relative flex min-h-screen flex-col justify-center p-4">
+        <div
+          aria-hidden
+          className="absolute inset-0 isolate contain-strict -z-10 opacity-60"
+        >
+          <div className="bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(0,0,0,0.06)_0,hsla(0,0%,55%,.02)_50%,rgba(0,0,0,0.01)_80%)] absolute top-0 right-0 h-[80rem] w-[35rem] -translate-y-[21rem] rounded-full" />
+          <div className="bg-[radial-gradient(50%_50%_at_50%_50%,rgba(0,0,0,0.04)_0,rgba(0,0,0,0.01)_80%,transparent_100%)] absolute top-0 right-0 h-[80rem] w-[15rem] [translate:5%_-50%] rounded-full" />
+        </div>
+        <Button variant="ghost" className="absolute top-7 left-5 hover:bg-zinc-800 hover:text-white" onClick={() => router.push('/')}>
+          <ChevronLeftIcon className='size-4 me-2' />
+          Home
+        </Button>
+        <div className="mx-auto space-y-4 w-full sm:w-[400px]">
 
-        {/* Main copy */}
-        <div className="relative z-10 space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold text-white leading-tight">
-              Performance that<br />
-              <span className="text-blue-300">moves with purpose.</span>
+          <div className="flex flex-col space-y-1">
+            <h1 className="font-heading text-2xl font-bold tracking-wide">
+              Welcome back
             </h1>
-            <p className="mt-4 text-slate-300 text-lg leading-relaxed max-w-md">
-              A structured goal-setting and tracking portal built for organisations that take accountability seriously.
+            <p className="text-muted-foreground text-base">
+              Sign in to your performance portal.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {FEATURES.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-4 h-4 text-blue-300" />
+          {error && (
+            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-2 mt-4">
+            <Button type="button" size="lg" className="w-full bg-[#2F2F2F] hover:bg-[#1f1f1f] text-white" onClick={handleOAuthLogin} disabled={loading}>
+              <MicrosoftIcon className='size-4 me-2' />
+              Continue with Microsoft (SSO)
+            </Button>
+          </div>
+
+          <AuthSeparator />
+
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div className="space-y-2">
+              <div className="relative">
+                <Input
+                  placeholder="your.email@example.com"
+                  className="peer ps-9"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+                <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+                  <AtSignIcon className="size-4" aria-hidden="true" />
                 </div>
-                <span className="text-slate-300 text-sm">{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer note */}
-        <p className="relative z-10 text-slate-500 text-xs">
-          © 2026 AtomQuest · Internal Performance Portal
-        </p>
-      </div>
-
-      {/* ── Right Panel: Login Form ── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
-        <div className="w-full max-w-md">
-
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">A</span>
-            </div>
-            <span className="text-slate-900 font-bold text-lg">AtomQuest</span>
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
-            <p className="text-slate-500 mt-1 text-sm">Sign in to your performance portal</p>
-          </div>
-
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Work Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                placeholder="name@company.com"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                  Password
-                </label>
-                <button type="button" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-                  Forgot password?
-                </button>
               </div>
               <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
+                <Input
+                  placeholder="Password"
+                  className="peer ps-9"
+                  type="password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+                  <KeyIcon className="size-4" aria-hidden="true" />
+                </div>
               </div>
             </div>
 
-            {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In →"
-              )}
-            </button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              <span>{loading ? "Signing in..." : "Continue With Email"}</span>
+            </Button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 border-t border-slate-200" />
-            <span className="text-xs text-slate-400 font-medium">DEMO ACCESS</span>
-            <div className="flex-1 border-t border-slate-200" />
-          </div>
+          <AuthSeparator text="DEMO ACCESS" />
 
-          {/* Role Quick-Access */}
           <div className="space-y-2">
             {DEMO_CREDENTIALS.map((cred) => (
-              <button
+              <Button
                 key={cred.role}
                 type="button"
+                variant="outline"
+                className="w-full justify-between hover:border-blue-300 transition-colors"
                 onClick={() => handleDemoLogin(cred.href, cred.email)}
                 disabled={loading}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-blue-300 transition-all text-sm group disabled:opacity-50"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    cred.role === "employee" ? "bg-blue-500" :
-                    cred.role === "manager" ? "bg-purple-500" : "bg-rose-500"
-                  }`} />
-                  <span className="font-medium text-slate-700">Continue as {cred.label}</span>
-                </div>
-                <span className="text-slate-400 text-xs group-hover:text-blue-500 transition-colors">
-                  {cred.email}
-                </span>
-              </button>
+                <span>Continue as {cred.label}</span>
+                <span className="text-xs text-muted-foreground">{cred.email}</span>
+              </Button>
             ))}
           </div>
-
-          <p className="text-center text-xs text-slate-400 mt-6">
-            Having trouble? Contact{" "}
-            <span className="text-blue-600 cursor-pointer hover:underline">HR Support</span>
+          
+          <p className="text-muted-foreground mt-8 text-sm text-center">
+            Having trouble? Contact{' '}
+            <a
+              href="#"
+              className="hover:text-primary underline underline-offset-4"
+            >
+              HR Support
+            </a>
           </p>
         </div>
       </div>
+    </main>
+  );
+}
+
+function FloatingPaths({ position }: { position: number }) {
+  const paths = Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    color: `rgba(255,255,255,${0.05 + i * 0.02})`,
+    width: 0.5 + i * 0.03,
+  }));
+
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      <svg
+        className="h-full w-full text-slate-950 dark:text-white"
+        viewBox="0 0 696 316"
+        fill="none"
+      >
+        <title>Background Paths</title>
+        {paths.map((path) => (
+          <motion.path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={path.width}
+            strokeOpacity={0.1 + path.id * 0.03}
+            initial={{ pathLength: 0.3, opacity: 0.6 }}
+            animate={{
+              pathLength: 1,
+              opacity: [0.3, 0.6, 0.3],
+              pathOffset: [0, 1, 0],
+            }}
+            transition={{
+              duration: 20 + Math.random() * 10,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: 'linear',
+            }}
+          />
+        ))}
+      </svg>
     </div>
   );
 }
+
+const MicrosoftIcon = (props: React.ComponentProps<'svg'>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 21 21" {...props}>
+    <path fill="#f25022" d="M1 1h9v9H1z"/>
+    <path fill="#00a4ef" d="M1 11h9v9H1z"/>
+    <path fill="#7fba00" d="M11 1h9v9h-9z"/>
+    <path fill="#ffb900" d="M11 11h9v9h-9z"/>
+  </svg>
+);
+
+const AuthSeparator = ({ text = "OR" }: { text?: string }) => {
+  return (
+    <div className="flex w-full items-center justify-center my-6">
+      <div className="bg-border h-px w-full" />
+      <span className="text-muted-foreground px-4 text-xs font-medium whitespace-nowrap">{text}</span>
+      <div className="bg-border h-px w-full" />
+    </div>
+  );
+};

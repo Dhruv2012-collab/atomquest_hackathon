@@ -1,277 +1,307 @@
 import { createClient } from "@/utils/supabase/server";
 import { GoalWorkspaceForm } from "@/components/goals/GoalWorkspaceForm";
 import { ProgressExecutionView } from "@/components/goals/ProgressExecutionView";
+import { OnboardingGuide } from "@/components/dashboard/OnboardingGuide";
+
 import {
-  AlertCircle, Clock, CheckCircle2, Lock,
-  Target, Scale, FileText, ArrowRight
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  Lock,
+  Scale,
+  Target,
+  TrendingUp,
+  CheckSquare
 } from "lucide-react";
 
-// ── Status config ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// STATUS SYSTEM
+// ─────────────────────────────────────────────────────────────
+
 const STATUS_CONFIG = {
   Draft: {
     label: "Draft",
-    pill: "bg-slate-100 text-slate-600",
+    pill: "bg-[#1c1c1c] text-slate-400 border-[#2a2a2a]",
     banner: null,
   },
+
   Pending_Approval: {
-    label: "Pending Approval",
-    pill: "bg-amber-100 text-amber-700",
+    label: "Under Review",
+    pill: "bg-[#2a1a00] text-amber-500 border-amber-900",
+
     banner: {
-      bg: "bg-amber-50 border-amber-200",
-      icon: Clock,
+      bg: "bg-[#1f1606] border-amber-900/50",
+      icon: Clock3,
       iconColor: "text-amber-500",
-      title: "Your goal sheet is under review",
-      body: "Sarah Lead (Manager) will review and approve your plan. You will be notified once a decision is made.",
+
+      title: "Your plan is currently under review.",
+
+      body: "Your manager will review your goals before the execution window opens.",
     },
   },
+
   Approved: {
     label: "Approved",
-    pill: "bg-emerald-100 text-emerald-700",
+    pill: "bg-[#062010] text-emerald-500 border-emerald-900",
+
     banner: {
-      bg: "bg-emerald-50 border-emerald-200",
+      bg: "bg-[#081a0e] border-emerald-900/50",
       icon: CheckCircle2,
       iconColor: "text-emerald-500",
-      title: "Goal plan approved",
-      body: "Your goal sheet has been approved. You can now log your quarterly achievements in the Check-ins tab.",
+
+      title: "Your goals are now active.",
+
+      body: "Quarterly check-ins are available for progress updates and execution tracking.",
     },
   },
+
   Rework_Required: {
-    label: "Rework Required",
-    pill: "bg-red-100 text-red-700",
+    label: "REVISION REQUIRED",
+    pill: "bg-transparent text-[#ff6b6b] border border-[#ff6b6b]/30",
+
     banner: {
-      bg: "bg-red-50 border-red-200",
+      bg: "bg-[#1a0f0f] border-l-[#ff6b6b] border-[#2a1414]",
       icon: AlertCircle,
-      iconColor: "text-red-500",
-      title: "Your plan needs revision",
-      body: null, // injected dynamically with manager comment
+      iconColor: "text-[#ff6b6b]",
+
+      title: "Your plan requires changes.",
+
+      body: null,
     },
   },
 };
 
-// ── Metric Strip Tile ──────────────────────────────────────────
-function MetricTile({
-  label, value, sub, icon: Icon, iconBg, valueColor,
+// ─────────────────────────────────────────────────────────────
+// METRIC CARD
+// ─────────────────────────────────────────────────────────────
+
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
 }: {
-  label: string; value: string; sub?: string;
-  icon: React.ElementType; iconBg: string; valueColor?: string;
+  label: string;
+  value: string;
+  icon: React.ElementType;
 }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-        <Icon className="w-5 h-5" />
+    <div className="flex-1 flex items-center gap-4 rounded-xl border border-[#222] bg-[#121212] px-5 py-4 transition-all">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1a1a1a]">
+        <Icon className="h-5 w-5 text-slate-400" />
       </div>
       <div>
-        <p className="text-xs font-medium text-slate-500">{label}</p>
-        <p className={`text-xl font-bold mt-0.5 ${valueColor || "text-slate-900"}`}>{value}</p>
-        {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500">
+          {label}
+        </p>
+        <p className="text-lg font-bold text-slate-200">
+          {value}
+        </p>
       </div>
     </div>
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────────────────────
+
 export default async function EmployeeDashboardPage() {
   const supabase = await createClient();
 
-  // MOCK DATA INJECTION
-  const mockPlan = {
-    id: "p_emp1",
-    status: "Rework_Required",
-    period: "Q1 2026",
-    manager_comment: "Please adjust the weightings to focus more on Operations.",
-    goals: [
-      { id: "g1", title: "Ship Feature X", description: "Launch the new reporting engine", thrust_area: "Innovation", uom: "Numeric", target_value: 1, weight: 60, is_shared: false, actual_value: 0, calculated_score: 0, status: "Not_Started" },
-      { id: "g2", title: "Fix 20 Bugs", description: "Reduce backlog", thrust_area: "Operations", uom: "Numeric", target_value: 20, weight: 30, is_shared: false, actual_value: 0, calculated_score: 0, status: "Not_Started" }
-    ]
-  };
+  // Fetch logged in user's active goal plan from database
+  const { data: plansData } = await supabase
+    .from("goal_plans")
+    .select(`
+      *,
+      goals (*)
+    `)
+    .eq("user_id", "00000000-0000-0000-0000-000000000101")
+    .order("created_at", { ascending: false });
 
-  const plan = mockPlan as any;
+  const plan = (plansData && plansData.length > 0) ? plansData[0] : null;
+
   const goals = plan?.goals || [];
-  const planStatus = (plan?.status as keyof typeof STATUS_CONFIG) || "Draft";
-  const statusCfg = STATUS_CONFIG[planStatus] || STATUS_CONFIG.Draft;
 
-  const totalWeight = goals.reduce((sum: number, g: any) => sum + Number(g.weight || 0), 0);
+  const planStatus =
+    (plan?.status as keyof typeof STATUS_CONFIG) || "Draft";
+
+  const statusCfg =
+    STATUS_CONFIG[planStatus] || STATUS_CONFIG.Draft;
+
+  const totalWeight = goals.reduce(
+    (sum: number, g: any) => sum + Number(g.weight || 0),
+    0
+  );
+
   const goalCount = goals.length;
 
-  const weightColor =
-    totalWeight === 100 ? "text-emerald-600" :
-    totalWeight > 100 ? "text-red-600" : "text-amber-600";
+  let avgScore = 0;
+  if (goals.length > 0) {
+    let totalScore = 0;
+    goals.forEach((g: any) => {
+      let score = 0;
+      const target = Number(g.target_value || 0);
+      const actual = Number(g.actual_value || 0);
+      const uom = g.uom || "";
+      if (uom.includes("Min")) {
+        score = target === 0 ? 0 : (actual / target) * 100;
+      } else if (uom.includes("Max")) {
+        score = actual === 0 ? 100 : (target / actual) * 100;
+      } else if (uom.includes("Zero-based") || uom.includes("Zero")) {
+        score = actual === 0 ? 100 : 0;
+      } else {
+        score = actual >= target ? 100 : (actual / (target || 1)) * 100;
+      }
+      totalScore += Math.min(Math.max(score, 0), 120);
+    });
+    avgScore = Math.round(totalScore / goals.length);
+  }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="relative mx-auto max-w-5xl px-6 py-10 space-y-8">
+      <OnboardingGuide role="employee" defaultPlanStatus={planStatus} />
 
-      {/* ── Page Header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">My Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Q1 FY2026 · Goal Setting &amp; Performance Phase</p>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${statusCfg.pill}`}>
-          {planStatus === "Pending_Approval" && <Clock className="w-3 h-3" />}
-          {planStatus === "Approved" && <CheckCircle2 className="w-3 h-3" />}
-          {planStatus === "Rework_Required" && <AlertCircle className="w-3 h-3" />}
-          {statusCfg.label}
-        </span>
-      </div>
+        <section id="dashboard" className="scroll-mt-32">
+          {/* HEADER */}
 
-      {/* ── Metric Strip ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricTile
-          label="Plan Status"
-          value={statusCfg.label}
-          sub="Current cycle"
-          icon={FileText}
-          iconBg="bg-slate-100"
-        />
-        <MetricTile
-          label="Goals Added"
-          value={`${goalCount} / 8`}
-          sub={goalCount >= 8 ? "Maximum reached" : `${8 - goalCount} slots remaining`}
-          icon={Target}
-          iconBg={goalCount >= 8 ? "bg-red-50" : "bg-blue-50"}
-          valueColor={goalCount >= 8 ? "text-red-600" : undefined}
-        />
-        <MetricTile
-          label="Weight Allocated"
-          value={`${totalWeight}%`}
-          sub={totalWeight === 100 ? "Target met ✓" : totalWeight > 100 ? "Exceeds 100%" : `${100 - totalWeight}% remaining`}
-          icon={Scale}
-          iconBg={totalWeight === 100 ? "bg-emerald-50" : "bg-amber-50"}
-          valueColor={weightColor}
-        />
-        <MetricTile
-          label="Quarter Window"
-          value="14 days"
-          sub="Closing 31 May 2026"
-          icon={Clock}
-          iconBg="bg-orange-50"
-          valueColor="text-orange-600"
-        />
-      </div>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 
-      {/* ── Status Banner (context-sensitive) ── */}
-      {statusCfg.banner && (
-        <div className={`flex items-start gap-4 p-4 rounded-xl border ${statusCfg.banner.bg}`}>
-          <statusCfg.banner.icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${statusCfg.banner.iconColor}`} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-800">{statusCfg.banner.title}</p>
-            {statusCfg.banner.body && (
-              <p className="text-sm text-slate-600 mt-1">{statusCfg.banner.body}</p>
-            )}
-            {/* Rework: show manager comment from plan */}
-            {planStatus === "Rework_Required" && plan?.manager_comment && (
-              <div className="mt-2 p-3 bg-white rounded-lg border border-red-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Manager Feedback</p>
-                <p className="text-sm text-slate-700 italic">"{plan.manager_comment}"</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Locked State (Pending Approval) ── */}
-      {planStatus === "Pending_Approval" && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-slate-400" />
-              <h2 className="font-semibold text-slate-800">Goal Sheet — Submitted</h2>
-            </div>
-            <span className="text-xs text-slate-400">Read-only while under review</span>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {goals.map((goal: any) => (
-              <div key={goal.id} className="px-6 py-4 flex items-start justify-between gap-4 opacity-75">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                      {goal.thrust_area}
-                    </span>
-                    {goal.is_shared && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
-                        🔗 Shared
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-slate-800 truncate">{goal.title}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Target: {goal.target_value} · {goal.uom}</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-bold text-slate-700">{goal.weight}%</p>
-                  <p className="text-[10px] text-slate-400">weight</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="px-6 py-3 bg-slate-50 rounded-b-xl flex items-center justify-between">
-            <p className="text-xs text-slate-500">{goalCount} goals · {totalWeight}% total weight</p>
-            <button className="text-xs text-slate-400 hover:text-red-500 transition-colors font-medium">
-              Withdraw submission
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Draft / Rework State: Goal Creation Form ── */}
-      {(planStatus === "Draft" || planStatus === "Rework_Required") && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-slate-800">Goal Sheet</h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {planStatus === "Rework_Required"
-                  ? "Address manager feedback and resubmit your plan"
-                  : "Define your objectives for Q1 FY2026"}
+              <h1 className="text-3xl font-bold tracking-tight text-slate-100">
+                Performance Dashboard
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
+                Track goals, manage quarterly execution, and maintain alignment
+                with organizational priorities through a structured workflow system.
               </p>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span>Total weight must equal 100%</span>
-              <span className={`font-bold ${weightColor}`}>{totalWeight}/100%</span>
-            </div>
-          </div>
-          <div className="p-6">
-            <GoalWorkspaceForm initialGoals={goals} planStatus={planStatus} />
-          </div>
-        </div>
-      )}
 
-      {/* ── Approved State: Progress Execution View ── */}
-      {planStatus === "Approved" && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-slate-800">Active Check-In Pulse</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Log your quarterly achievements for Q1 FY2026</p>
+            <div
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest ${statusCfg.pill}`}
+            >
+              {planStatus === "Rework_Required" && (
+                <AlertCircle className="h-3.5 w-3.5" />
+              )}
+              {statusCfg.label}
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Window Open
-            </div>
-          </div>
-          <div className="p-6">
-            <ProgressExecutionView goals={goals} />
-          </div>
-        </div>
-      )}
 
-      {/* ── Empty state: no plan yet ── */}
-      {!plan && (
-        <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center">
-          <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Target className="w-6 h-6 text-blue-500" />
           </div>
-          <h3 className="font-semibold text-slate-800 mb-1">No goal plan yet</h3>
-          <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">
-            Start by defining your Q1 objectives. You can add up to 8 goals with a combined weight of exactly 100%.
-          </p>
-          <a
-            href="/employee/goals"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Goal Sheet <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      )}
+
+          {/* STATUS NOTIFICATION */}
+          {statusCfg.banner && (
+            <div className={`mt-8 rounded-xl border-l-[3px] border ${statusCfg.banner.bg} p-4`}>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <statusCfg.banner.icon className={`h-4 w-4 ${statusCfg.banner.iconColor}`} />
+                </div>
+                <div className="flex-1">
+                  <h2 className={`text-sm font-semibold ${statusCfg.banner.iconColor}`}>{statusCfg.banner.title}</h2>
+                  {planStatus === "Rework_Required" && plan?.manager_comment ? (
+                    <div className="mt-3 text-sm text-slate-300 bg-[#222] p-3 rounded-lg border border-[#333]">
+                      <span className="font-bold text-slate-100 mr-2">Manager Feedback:</span>
+                      <span className="italic">{plan.manager_comment}</span>
+                    </div>
+                  ) : (
+                    statusCfg.banner.body && <p className="mt-1 text-sm text-slate-400">{statusCfg.banner.body}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* METRICS */}
+          <div className="mt-6 flex flex-col md:flex-row gap-4">
+            <MetricCard
+              label="Quarter Window"
+              value="14 Days Remaining"
+              icon={Clock3}
+            />
+            <MetricCard
+              label="Average Progress"
+              value={goals.length > 0 ? `${avgScore}% Complete` : "0% Complete"}
+              icon={TrendingUp}
+            />
+            <MetricCard
+              label="Active Objectives"
+              value={`0${goalCount} / 08`}
+              icon={CheckSquare}
+            />
+          </div>
+        </section>
+
+
+        {/* DRAFT / REWORK */}
+
+        <section id="goals" className="scroll-mt-32 mt-10">
+          {(planStatus === "Draft" ||
+            planStatus === "Rework_Required") && (
+              <div className="overflow-hidden">
+
+                <GoalWorkspaceForm
+                  initialGoals={goals}
+                  planStatus={planStatus}
+                />
+
+              </div>
+            )}
+        </section>
+
+        {/* APPROVED */}
+
+        <section id="check-in" className="scroll-mt-32">
+          {planStatus === "Approved" && (
+            <div className="mt-10 overflow-hidden rounded-2xl border border-[#222] bg-[#121212]">
+
+              <div className="flex flex-col gap-5 border-b border-[#222] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-100">
+                    Quarterly Execution
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Log achievements and monitor progress against approved goals.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <ProgressExecutionView goals={goals} />
+              </div>
+
+            </div>
+          )}
+        </section>
+
+        {/* EMPTY */}
+
+        {!plan && (
+          <div className="mt-10 rounded-2xl border border-dashed border-[#333] bg-[#121212] p-14 text-center">
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a1a1a]">
+              <Target className="h-6 w-6 text-slate-400" />
+            </div>
+
+            <h2 className="mt-6 text-2xl font-semibold tracking-tight text-slate-100">
+              Start Your Goal Plan
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400">
+              Create structured quarterly objectives with measurable targets
+              and weighted execution priorities.
+            </p>
+
+            <a
+              href="#goals"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-slate-200"
+            >
+              Create Goal Sheet
+              <ArrowRight className="h-4 w-4" />
+            </a>
+
+          </div>
+        )}
+
     </div>
   );
 }

@@ -49,6 +49,7 @@
 }
 
 :root {
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -127,4 +128,192 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ─────────────────────────────────────────────
+   PORTAL THEME SYSTEM
+   Dark is default — all values set for dark.
+   [data-portal-theme="light"] flips them.
+───────────────────────────────────────────── */
+.portal-shell {
+  --pt-bg:           #0a0a0a;
+  --pt-nav-bg:       #1f1f1f;
+  --pt-card-bg:      #151515;
+  --pt-section-bg:   #0f0f0f;
+  --pt-subtle-bg:    #222222;
+  --pt-btn-bg:       #121212;
+  --pt-icon-bg:      #2a2a2a;
+  --pt-row-hover:    #1a1a1a;
+  --pt-tag-bg:       #0a0a0a;
+  --pt-border:       rgba(255,255,255,0.10);
+  --pt-border-s:     #222222;
+  --pt-border-m:     #333333;
+  --pt-border-l:     #444444;
+  --pt-text-1:       #e2e8f0;
+  --pt-text-2:       #cbd5e1;
+  --pt-text-3:       #94a3b8;
+  --pt-text-4:       #64748b;
+  --pt-text-nav:     #a0a0a0;
+  --pt-text-nav-h:   #ffffff;
+  --pt-logo-bg:      #ffffff;
+  --pt-logo-fg:      #000000;
+  --pt-pill-bg:      #ffffff;
+  --pt-pill-fg:      #000000;
+  background-color:  var(--pt-bg);
+  color:             var(--pt-text-1);
+}
+
+.portal-shell[data-portal-theme="light"] {
+  --pt-bg:           #f1f5f9;
+  --pt-nav-bg:       #ffffff;
+  --pt-card-bg:      #ffffff;
+  --pt-section-bg:   #f8fafc;
+  --pt-subtle-bg:    #e2e8f0;
+  --pt-btn-bg:       #f1f5f9;
+  --pt-icon-bg:      #e2e8f0;
+  --pt-row-hover:    #f8fafc;
+  --pt-tag-bg:       #f1f5f9;
+  --pt-border:       rgba(0,0,0,0.08);
+  --pt-border-s:     #e2e8f0;
+  --pt-border-m:     #cbd5e1;
+  --pt-border-l:     #94a3b8;
+  --pt-text-1:       #0f172a;
+  --pt-text-2:       #1e293b;
+  --pt-text-3:       #475569;
+  --pt-text-4:       #64748b;
+  --pt-text-nav:     #64748b;
+  --pt-text-nav-h:   #0f172a;
+  --pt-logo-bg:      #0f172a;
+  --pt-logo-fg:      #ffffff;
+  --pt-pill-bg:      #0f172a;
+  --pt-pill-fg:      #ffffff;
+  background-color:  var(--pt-bg);
+  color:             var(--pt-text-1);
+}
+
+/* Navbar */
+.portal-nav {
+  background-color: var(--pt-nav-bg);
+  border-color:     var(--pt-border);
+}
+.portal-nav-link {
+  color: var(--pt-text-nav);
+}
+.portal-nav-link:hover {
+  color: var(--pt-text-nav-h);
+}
+.portal-logo-circle {
+  background-color: var(--pt-logo-bg);
+  color:            var(--pt-logo-fg);
+}
+.portal-user-pill {
+  background-color: var(--pt-pill-bg);
+  color:            var(--pt-pill-fg);
+}
+.theme-toggle-btn {
+  background-color: var(--pt-icon-bg);
+  border-color:     var(--pt-border);
+  color:            var(--pt-text-3);
+}
+.theme-toggle-btn:hover {
+  background-color: var(--pt-subtle-bg);
+  color:            var(--pt-text-1);
+}
+
+/* Cards & panels */
+.portal-card {
+  background-color: var(--pt-card-bg);
+  border-color:     var(--pt-border-s);
+}
+.portal-section {
+  background-color: var(--pt-section-bg);
+  border-color:     var(--pt-border-s);
+}
+
+/* ── Tailwind arbitrary-value overrides ── */
+/* Scoped under [data-portal-theme="light"] so dark mode is untouched */
+[data-portal-theme="light"] {
+  /* Backgrounds */
+  & .bg-\[\#0a0a0a\]  { background-color: #f1f5f9 !important; }
+  & .bg-\[\#0f0f0f\]  { background-color: #f8fafc !important; }
+  & .bg-\[\#121212\]  { background-color: #f1f5f9 !important; }
+  & .bg-\[\#151515\]  { background-color: #ffffff !important; }
+  & .bg-\[\#1a1a1a\]  { background-color: #f8fafc !important; }
+  & .bg-\[\#1f1f1f\]  { background-color: #ffffff !important; }
+  & .bg-\[\#222\]     { background-color: #e2e8f0 !important; }
+  & .bg-\[\#2a2a2a\]  { background-color: #e2e8f0 !important; }
+  & .bg-\[\#333\]     { background-color: #cbd5e1 !important; }
+  & .bg-white         { background-color: #0f172a !important; }
+
+  /* Text */
+  & .text-slate-100   { color: #0f172a !important; }
+  & .text-slate-200   { color: #1e293b !important; }
+  & .text-slate-300   { color: #334155 !important; }
+  & .text-slate-400   { color: #475569 !important; }
+  & .text-slate-500   { color: #64748b !important; }
+  & .text-slate-800   { color: #0f172a !important; }
+  & .text-\[\#a0a0a0\]{ color: #64748b !important; }
+  & .text-black       { color: #ffffff !important; }
+
+  /* Borders */
+  & .border-\[\#222\]        { border-color: #e2e8f0 !important; }
+  & .border-\[\#333\]        { border-color: #cbd5e1 !important; }
+  & .border-\[\#444\]        { border-color: #94a3b8 !important; }
+  & .border-white\/10        { border-color: rgba(0,0,0,0.08) !important; }
+  & .border-white\/5         { border-color: rgba(0,0,0,0.05) !important; }
+
+  /* Hover states */
+  & .hover\:bg-\[\#222\]:hover     { background-color: #e2e8f0 !important; }
+  & .hover\:bg-\[\#1a1a1a\]:hover  { background-color: #f1f5f9 !important; }
+  & .hover\:text-white:hover       { color: #0f172a !important; }
+  & .hover\:text-slate-200:hover   { color: #1e293b !important; }
+  & .hover\:text-slate-900:hover   { color: #0f172a; }
+
+  /* Table row hover */
+  & .hover\:bg-\[\#1a1a1a\]:hover { background-color: #f8fafc !important; }
+
+  /* White text → dark text */
+  & .text-white          { color: #0f172a !important; }
+  & .hover\:text-white:hover { color: #0f172a !important; }
+
+  /* Status banner backgrounds — map dark tints to matching light tints */
+  & .bg-\[\#1a0f0f\]    { background-color: #fff1f2 !important; }  /* rework/red */
+  & .bg-\[\#1f1606\]    { background-color: #fffbeb !important; }  /* pending/amber */
+  & .bg-\[\#081a0e\]    { background-color: #f0fdf4 !important; }  /* approved/green */
+  & .bg-\[\#2a1a00\]    { background-color: #fef9c3 !important; }  /* pill amber */
+  & .bg-\[\#062010\]    { background-color: #dcfce7 !important; }  /* pill green */
+  & .bg-\[\#1c1c1c\]    { background-color: #f1f5f9 !important; }  /* draft pill */
+  & .bg-\[\#2a303a\]    { background-color: #dbeafe !important; }  /* goal badge */
+  & .bg-\[\#222222\]\/50{ background-color: rgba(226,232,240,0.6) !important; }
+  & .bg-\[\#111\]        { background-color: #f8fafc !important; }  /* hierarchy card */
+  & .bg-\[\#001a2a\]    { background-color: #eff6ff !important; }  /* azure code pill */
+  & .bg-\[\#1a0b2e\]    { background-color: #f5f3ff !important; }  /* purple code pill */
+  & .bg-\[\#2a0505\]    { background-color: #fef2f2 !important; }  /* red warning badge */
+
+  /* Status border colours for banners */
+  & .border-amber-900        { border-color: #fbbf24 !important; }
+  & .border-amber-900\/50    { border-color: rgba(251,191,36,0.5) !important; }
+  & .border-emerald-900      { border-color: #34d399 !important; }
+  & .border-emerald-900\/50  { border-color: rgba(52,211,153,0.5) !important; }
+  & .border-blue-900\/50     { border-color: rgba(59,130,246,0.4) !important; }
+  & .border-purple-900\/50   { border-color: rgba(139,92,246,0.4) !important; }
+  & .border-red-900\/50      { border-color: rgba(239,68,68,0.4) !important; }
+  & .border-\[\#2a1414\]     { border-color: #fca5a5 !important; }
+  & .border-l-\[\#ff6b6b\]   { border-left-color: #ef4444 !important; }
+  & .border-dashed           { border-color: #cbd5e1 !important; }
+
+  /* Table dividers */
+  & .divide-\[\#222\] > * + *  { border-color: #e2e8f0 !important; }
+
+  /* Goal badge text (blue) */
+  & .text-\[\#7ca5d4\]  { color: #1d4ed8 !important; }
+
+  /* Submit / action buttons — dark bg + light text for contrast */
+  & .bg-\[\#333\]            { background-color: #1e293b !important; }
+  & .hover\:bg-\[\#444\]:hover { background-color: #334155 !important; }
+  & .text-slate-200.bg-\[\#333\] { color: #ffffff !important; }
+
+  /* Sign-out button hover override (keep red/rose accent) */
+  & .hover\:bg-red-500\/20:hover  { background-color: rgb(254 226 226) !important; }
+  & .hover\:bg-rose-500\/20:hover { background-color: rgb(255 228 230) !important; }
 }

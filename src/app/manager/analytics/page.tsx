@@ -1,97 +1,101 @@
-"use client";
-
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
+import { createClient } from "@/utils/supabase/server";
 import { TrendingUp, Users, Target, CheckCircle2 } from "lucide-react";
+import { AnalyticsCharts } from "@/components/manager/AnalyticsCharts";
 
-// Mock Data
-const teamPerformance = [
-  { name: "John Doe", score: 95 },
-  { name: "Alice Smith", score: 88 },
-  { name: "Bob Johnson", score: 102 }, // Overachieving
-  { name: "Eva Green", score: 76 },
-];
+export default async function ManagerAnalyticsPage() {
+  const supabase = await createClient();
 
-const teamSkillRadar = [
-  { subject: 'Financial Targets', A: 120, fullMark: 150 },
-  { subject: 'Product Delivery', A: 98, fullMark: 150 },
-  { subject: 'Customer Success', A: 86, fullMark: 150 },
-  { subject: 'Process Impr.', A: 99, fullMark: 150 },
-  { subject: 'Innovation', A: 85, fullMark: 150 },
-];
+  const { data: plansData } = await supabase
+    .from("goal_plans")
+    .select(`*, users (*), goals (*)`)
+    .eq("status", "Approved");
 
-export default function ManagerAnalyticsPage() {
+  const mockApprovedPlans = [
+    {
+      id: "p2", period: "Q1 2026", status: "Approved", user_id: "u2",
+      users: { name: "Eve Engineer", email: "eve@example.com" },
+      goals: [
+        { id: "g3", title: "Improve Uptime", thrust_area: "Operations", uom: "%", target_value: 99.9, weight: 60, is_shared: true, actual_value: 99.5, calculated_score: 80, status: "On Track", manager_comment: "Good progress" },
+        { id: "g4", title: "Write Tests", thrust_area: "Innovation", uom: "%", target_value: 80, weight: 40, is_shared: false, actual_value: 85, calculated_score: 106, status: "Completed", manager_comment: null }
+      ]
+    },
+    {
+      id: "p3", period: "Q1 2026", status: "Approved", user_id: "u3",
+      users: { name: "Alice Marketing", email: "alice@example.com" },
+      goals: [
+        { id: "g5", title: "Launch Q1 Campaign", thrust_area: "Revenue", uom: "Timeline", target_value: 100, weight: 100, is_shared: false, actual_value: 100, calculated_score: 100, status: "Completed", manager_comment: "Great execution" }
+      ]
+    }
+  ];
+
+  const approvedPlans = (plansData && plansData.length > 0) ? plansData : mockApprovedPlans;
+
+  // Calculate dynamic stats for the tiles
+  const totalReports = new Set(approvedPlans.map(p => p.user_id)).size;
+  const activeGoals = approvedPlans.reduce((acc, p) => acc + (p.goals?.length || 0), 0);
+  
+  let totalScore = 0, totalWeight = 0, completedGoals = 0;
+  approvedPlans.forEach(p => {
+    p.goals?.forEach((g: any) => {
+      totalScore += Number(g.calculated_score || 0);
+      totalWeight += Number(g.weight || 0);
+      if (g.status === "Completed") completedGoals++;
+    });
+  });
+
+  const avgScore = totalWeight > 0 ? ((totalScore / totalWeight) * 100).toFixed(1) : "0.0";
+  const checkinRate = activeGoals > 0 ? ((completedGoals / activeGoals) * 100).toFixed(1) : "0.0";
+
+  const teamPerformance = approvedPlans.map(plan => {
+    const goals = plan.goals || [];
+    const tWeight = goals.reduce((acc: number, g: any) => acc + Number(g.weight || 0), 0);
+    const tScore = goals.reduce((acc: number, g: any) => acc + Number(g.calculated_score || 0), 0);
+    const score = tWeight > 0 ? (tScore / tWeight) * 100 : 0;
+    
+    return {
+      name: plan.users?.name?.split(" ")[0] || "Unknown",
+      score: Number(score.toFixed(1))
+    };
+  });
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Team Analytics</h1>
-          <p className="text-sm text-slate-500 mt-1">Performance trends and KPI distribution for your direct reports.</p>
+          <h1 className="text-2xl font-bold text-slate-100">Team Analytics</h1>
+          <p className="text-sm text-slate-400 mt-1">Performance trends and KPI distribution for your direct reports.</p>
         </div>
       </div>
 
       {/* KPI Summary Tiles */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Team Avg Score", value: "90%", sub: "On Track", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-50" },
-          { label: "Active Goals", value: "32", sub: "Across 4 reports", icon: Target, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Check-in Rate", value: "100%", sub: "All updated", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Direct Reports", value: "4", sub: "Full utilization", icon: Users, color: "text-indigo-600", bg: "bg-indigo-50" },
+          { label: "Team Avg Score", value: `${avgScore}%`, sub: "Based on approved weights", icon: TrendingUp, color: "text-emerald-400", bg: "bg-[#062010] border border-emerald-900/50" },
+          { label: "Active Goals", value: activeGoals.toString(), sub: `Across ${totalReports} reports`, icon: Target, color: "text-blue-400", bg: "bg-[#001a2a] border border-blue-900/50" },
+          { label: "Check-in Rate", value: `${checkinRate}%`, sub: "Completion ratio", icon: CheckCircle2, color: "text-purple-400", bg: "bg-[#1a0b2e] border border-purple-900/50" },
+          { label: "Direct Reports", value: totalReports.toString(), sub: "With approved plans", icon: Users, color: "text-amber-400", bg: "bg-[#2a1a00] border border-amber-900/50" },
         ].map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div key={i} className="bg-[#151515] border border-[#222] rounded-xl p-5 shadow-sm hover:border-[#333] transition-colors">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{kpi.label}</p>
-                  <h3 className="text-2xl font-bold text-slate-900 mt-1">{kpi.value}</h3>
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{kpi.label}</p>
+                  <h3 className="text-2xl font-bold text-slate-100 mt-1 tracking-tight">{kpi.value}</h3>
                 </div>
                 <div className={`p-2 rounded-lg ${kpi.bg}`}>
-                  <Icon className={`w-5 h-5 ${kpi.color}`} />
+                  <Icon className={`w-4 h-4 ${kpi.color}`} />
                 </div>
               </div>
-              <p className="text-xs text-slate-400 mt-3">{kpi.sub}</p>
+              <p className="text-xs font-medium text-slate-400 mt-3">{kpi.sub}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-2 gap-6">
-        
-        {/* Individual Scores */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-800 mb-4">Individual Performance Scores</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={teamPerformance} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis domain={[0, 120]} tick={{ fontSize: 12 }} />
-                <Tooltip cursor={{ fill: "#f8fafc" }} />
-                <Bar dataKey="score" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={40} name="Avg Score %" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Team Strengths Radar */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-800 mb-4">Team Aggregate Focus Areas</h3>
-          <div className="h-64 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={teamSkillRadar}>
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
-                <Radar name="Team Score" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} />
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-      </div>
+      {/* Charts Component */}
+      <AnalyticsCharts teamPerformance={teamPerformance} />
     </div>
   );
 }

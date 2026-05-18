@@ -1,0 +1,158 @@
+<mxfile host="Electron" modified="2026-05-17T16:15:00Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="atomquest-arch" name="AtomQuest Architecture">
+    <mxGraphModel dx="1200" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="#121212">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ==================== CONTAINERS / LAYERS ==================== -->
+        
+        <!-- Presentation Layer Container -->
+        <mxCell id="layer-presentation" value="1. PRESENTATION LAYER (Next.js 16 App Router - UI)" style="swimlane;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#1e1e1e;strokeColor=#444444;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="320" height="740" as="geometry" />
+        </mxCell>
+
+        <!-- Logic / Controller Layer Container -->
+        <mxCell id="layer-logic" value="2. LOGIC &amp; ACTION LAYER (Next.js Server Actions &amp; API)" style="swimlane;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#1e1e1e;strokeColor=#444444;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="320" height="740" as="geometry" />
+        </mxCell>
+
+        <!-- Database Layer Container -->
+        <mxCell id="layer-database" value="3. DATA LAYER (PostgreSQL on Supabase)" style="swimlane;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#1e1e1e;strokeColor=#444444;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="40" width="320" height="420" as="geometry" />
+        </mxCell>
+
+        <!-- Integrations Layer Container -->
+        <mxCell id="layer-integrations" value="4. INTEGRATION LAYER" style="swimlane;whiteSpace=wrap;html=1;fontColor=#ffffff;fillColor=#1e1e1e;strokeColor=#444444;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="490" width="320" height="290" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== UI COMPONENTS ==================== -->
+        
+        <!-- Employee Dashboard -->
+        <mxCell id="ui-employee" value="Employee Portal&#xa;(/employee/dashboard)&#xa;--&#xa;* Goal Setup Form (100% Weight)&#xa;* Interactive Check-in Views&#xa;* Live Onboarding Guide" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0d2b45;strokeColor=#00a8e8;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-presentation">
+          <mxGeometry x="20" y="50" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Manager Dashboard -->
+        <mxCell id="ui-manager" value="Manager Command Center&#xa;(/manager/dashboard)&#xa;--&#xa;* Approval Queue (Approve/Rework)&#xa;* Active Comment Review Module&#xa;* Stat Cards &amp; Progress Charts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1b4332;strokeColor=#52b788;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-presentation">
+          <mxGeometry x="20" y="220" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Dashboard -->
+        <mxCell id="ui-admin" value="Admin Command Center&#xa;(/admin/dashboard)&#xa;--&#xa;* Azure AD Entra Mapping Config&#xa;* Quarter Cycle Lock/Unlock&#xa;* Escalations &amp; Change Trails" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2d004d;strokeColor=#b388ff;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-presentation">
+          <mxGeometry x="20" y="390" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Floating Navbar Component -->
+        <mxCell id="ui-navbar" value="Floating Top Navbar Architecture&#xa;--&#xa;* Sticky dynamic backdrop filters&#xa;* Real-time role profile switcher&#xa;* Seamless dark/light theme switch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2b2d42;strokeColor=#8d99ae;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-presentation">
+          <mxGeometry x="20" y="560" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== ACTIONS & LOGIC ==================== -->
+        
+        <!-- Goal Submission Action -->
+        <mxCell id="action-goals" value="Goal Submission Action&#xa;(src/app/actions/goals.ts)&#xa;--&#xa;* Strict 100% Weighting Validation&#xa;* Date Verification (May 1st Window)&#xa;* Bulk Inserts plans &amp; goals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3d3100;strokeColor=#f5a623;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-logic">
+          <mxGeometry x="20" y="50" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Progress Check-in Action -->
+        <mxCell id="action-progress" value="Check-in &amp; Progress Action&#xa;(src/app/actions/progress.ts)&#xa;--&#xa;* Min/Max Scoring Engine (Numeric/%)&#xa;* Zero-based Metric handling&#xa;* Triggers cascades and managers notes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3d3100;strokeColor=#f5a623;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-logic">
+          <mxGeometry x="20" y="220" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Cycle Management Action -->
+        <mxCell id="action-admin" value="Administrative Overrides&#xa;(src/app/actions/admin.ts)&#xa;--&#xa;* Cycle Locks &amp; Dynamic Unlocks&#xa;* Secure transactional bypass checks&#xa;* Escalation triggers &amp; notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3d3100;strokeColor=#f5a623;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-logic">
+          <mxGeometry x="20" y="390" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- CSV Export Streams -->
+        <mxCell id="action-export" value="CSV Export Streaming Route&#xa;(src/app/api/export/route.ts)&#xa;--&#xa;* Generates achievement CSV exports&#xa;* Securely downloads system logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4d0000;strokeColor=#ff6b6b;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-logic">
+          <mxGeometry x="20" y="560" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== DATABASE TABLES ==================== -->
+        
+        <!-- PostgreSQL Tables -->
+        <mxCell id="db-tables" value="Postgres Schema Tables&#xa;--&#xa;* users (id, name, email, manager_id, role)&#xa;* goal_plans (id, user_id, period, status)&#xa;* goals (id, plan_id, title, uom, target, weight, actual)&#xa;* audit_logs (id, admin_id, action, plan_id)&#xa;* escalation_logs (id, goal_id, type, status)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#1a1126;strokeColor=#9d4edd;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-database">
+          <mxGeometry x="20" y="50" width="280" height="230" as="geometry" />
+        </mxCell>
+
+        <!-- Database Policies & Triggers -->
+        <mxCell id="db-policies" value="RLS &amp; Database Cascade Triggers&#xa;--&#xa;* Strict Row-Level Security Rules&#xa;* Auto-recalculation cascade triggers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1126;strokeColor=#9d4edd;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-database">
+          <mxGeometry x="20" y="300" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== EXTERNAL SERVICES ==================== -->
+        
+        <!-- Entra ID Sync -->
+        <mxCell id="ext-entra" value="Azure Active Directory (Entra AD)&#xa;--&#xa;* Microsoft OAuth Provider authentication&#xa;* Corporate security groups &amp; hierarchy mappings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#001a33;strokeColor=#33adff;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-integrations">
+          <mxGeometry x="20" y="50" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Teams Webhook & Resend -->
+        <mxCell id="ext-notifications" value="External Outbound Channels&#xa;--&#xa;* MS Teams Connector (Webhook payloads)&#xa;* Resend (High-volume performance emails)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#001a33;strokeColor=#33adff;fontColor=#ffffff;align=left;spacing=8;" vertex="1" parent="layer-integrations">
+          <mxGeometry x="20" y="160" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== EDGES / RELATIONSHIPS ==================== -->
+        
+        <!-- UI Employee -> Goal Action -->
+        <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#00a8e8;strokeWidth=2;" edge="1" source="ui-employee" target="action-goals" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UI Manager -> Progress Action -->
+        <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#52b788;strokeWidth=2;" edge="1" source="ui-manager" target="action-progress" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UI Admin -> Admin Action -->
+        <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#b388ff;strokeWidth=2;" edge="1" source="ui-admin" target="action-admin" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Actions -> Database -->
+        <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryCw=0;entryCh=0;strokeColor=#f5a623;strokeWidth=2;" edge="1" source="action-goals" target="db-tables" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="730,123;765,123;765,205;820,205" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#f5a623;strokeWidth=2;" edge="1" source="action-progress" target="db-tables" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="730,325;765,325;765,205;820,205" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#f5a623;strokeWidth=2;" edge="1" source="action-admin" target="db-tables" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="730,495;765,495;765,205;820,205" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Admin Actions -> Integrations -->
+        <mxCell id="edge7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#b388ff;strokeWidth=2;" edge="1" source="action-admin" target="ext-entra" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="730,463;765,463;765,585;820,585" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Goal Actions -> Notifications -->
+        <mxCell id="edge8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#f5a623;strokeWidth=2;" edge="1" source="action-goals" target="ext-notifications" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="730,188;780,188;780,695;820,695" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Admin Actions -> Exports -->
+        <mxCell id="edge9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#ff6b6b;strokeWidth=2;" edge="1" source="action-export" target="ui-admin" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="410,665;385,665;385,495;320,495" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

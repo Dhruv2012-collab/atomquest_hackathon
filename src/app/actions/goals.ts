@@ -72,6 +72,45 @@ export async function submitGoalPlan(payload: any) {
 
     if (goalsError) throw goalsError
 
+    // 6. Notifications Integration
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('name, email, manager_id')
+        .eq('id', userId)
+        .single();
+        
+      if (userData && userData.manager_id) {
+        const { data: managerData } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', userData.manager_id)
+          .single();
+          
+        if (managerData) {
+          const { sendTeamsNotification, sendEmailNotification } = await import('@/utils/notifications');
+          const notificationData = {
+            event: "SUBMITTED" as const,
+            employeeName: userData.name,
+            managerName: managerData.name,
+            managerEmail: managerData.email,
+            planId: plan.id,
+            deepLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/manager/approvals`
+          };
+          
+          // Fire and forget notifications
+          if (process.env.TEAMS_WEBHOOK_URL) {
+            sendTeamsNotification(process.env.TEAMS_WEBHOOK_URL, notificationData).catch(console.error);
+          }
+          if (process.env.RESEND_API_KEY) {
+            sendEmailNotification(process.env.RESEND_API_KEY, notificationData).catch(console.error);
+          }
+        }
+      }
+    } catch (notifyError) {
+      console.error("Failed to trigger notifications:", notifyError);
+    }
+
     revalidatePath("/employee/dashboard")
     
     return { success: true }

@@ -70,50 +70,50 @@ const EVENT_STYLE = {
   submit: {
     icon: FileText,
     dot: "bg-blue-500",
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
+    iconBg: "bg-[#001a2a] border border-blue-900/50",
+    iconColor: "text-blue-500",
     label: "Submitted",
-    labelStyle: "bg-blue-100 text-blue-700",
+    labelStyle: "bg-[#001a2a] text-blue-400 border border-blue-900/50",
   },
   approve: {
     icon: CheckCircle2,
     dot: "bg-emerald-500",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
+    iconBg: "bg-[#062010] border border-emerald-900/50",
+    iconColor: "text-emerald-500",
     label: "Approved",
-    labelStyle: "bg-emerald-100 text-emerald-700",
+    labelStyle: "bg-[#062010] text-emerald-500 border border-emerald-900/50",
   },
   rework: {
     icon: AlertCircle,
     dot: "bg-amber-500",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-600",
+    iconBg: "bg-[#2a1a00] border border-amber-900/50",
+    iconColor: "text-amber-500",
     label: "Rework",
-    labelStyle: "bg-amber-100 text-amber-700",
+    labelStyle: "bg-[#2a1a00] text-amber-500 border border-amber-900/50",
   },
   unlock: {
     icon: Lock,
-    dot: "bg-rose-500",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
+    dot: "bg-red-500",
+    iconBg: "bg-[#2a0505] border border-red-900/50",
+    iconColor: "text-red-500",
     label: "Unlocked",
-    labelStyle: "bg-rose-100 text-rose-700",
+    labelStyle: "bg-[#2a0505] text-red-500 border border-red-900/50",
   },
   edit: {
     icon: Edit2,
     dot: "bg-purple-500",
-    iconBg: "bg-purple-50",
-    iconColor: "text-purple-600",
+    iconBg: "bg-[#1a0b2e] border border-purple-900/50",
+    iconColor: "text-purple-400",
     label: "Edited",
-    labelStyle: "bg-purple-100 text-purple-700",
+    labelStyle: "bg-[#1a0b2e] text-purple-400 border border-purple-900/50",
   },
   push: {
     icon: PlusCircle,
     dot: "bg-indigo-500",
-    iconBg: "bg-indigo-50",
-    iconColor: "text-indigo-600",
+    iconBg: "bg-[#0a0a2a] border border-indigo-900/50",
+    iconColor: "text-indigo-400",
     label: "KPI Pushed",
-    labelStyle: "bg-indigo-100 text-indigo-700",
+    labelStyle: "bg-[#0a0a2a] text-indigo-400 border border-indigo-900/50",
   },
 };
 
@@ -158,20 +158,20 @@ export default async function AuditLogPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Audit Trail</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold text-slate-100">Audit Trail</h1>
+          <p className="text-[13px] text-slate-400 mt-1">
             Complete change history — who changed what, when.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <a
             href="/api/export-audit"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-300 bg-[#121212] border border-[#333] px-4 py-2 rounded-lg hover:bg-[#222] transition-colors shadow-sm"
           >
             <Download className="w-4 h-4" />
             Export CSV
           </a>
-          <div className="flex items-center gap-1.5 text-sm text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-400 bg-[#151515] border border-[#222] px-4 py-2 rounded-lg">
             <ScrollText className="w-4 h-4" />
             {events.length} events
           </div>
@@ -183,7 +183,9 @@ export default async function AuditLogPage() {
         {(["All", "Submitted", "Approved", "Rework", "Unlocked"] as const).map((f) => (
           <button
             key={f}
-            className="px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
+            className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider rounded-full border transition-colors ${
+              f === "All" ? "bg-[#333] text-slate-200 border-[#444]" : "bg-[#111] text-slate-500 border-[#222] hover:bg-[#1a1a1a] hover:text-slate-300"
+            }`}
           >
             {f}
           </button>
@@ -192,26 +194,26 @@ export default async function AuditLogPage() {
 
       {/* Timeline feed */}
       {events.length === 0 ? (
-        <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center">
-          <ScrollText className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-500">No audit events recorded yet.</p>
+        <div className="bg-[#151515] border border-dashed border-[#333] rounded-xl p-12 text-center">
+          <ScrollText className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+          <p className="text-[13px] text-slate-500">No audit events recorded yet.</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="divide-y divide-slate-50">
+        <div className="bg-[#151515] border border-[#222] rounded-xl shadow-sm overflow-hidden">
+          <div className="divide-y divide-[#222]">
             {events.map((event, idx) => {
               const cfg = EVENT_STYLE[event.type] || EVENT_STYLE.submit;
               const Icon = cfg.icon;
 
               return (
-                <div key={event.id} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors">
+                <div key={event.id} className="flex items-start gap-4 px-6 py-5 hover:bg-[#1a1a1a] transition-colors group">
                   {/* Timeline dot + icon */}
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
+                  <div className="flex flex-col items-center gap-2 flex-shrink-0 pt-0.5">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.iconBg}`}>
                       <Icon className={`w-4 h-4 ${cfg.iconColor}`} />
                     </div>
                     {idx < events.length - 1 && (
-                      <div className="w-px flex-1 bg-slate-100 min-h-[16px]" />
+                      <div className="w-px flex-1 bg-[#222] min-h-[24px] group-hover:bg-[#333] transition-colors" />
                     )}
                   </div>
 
@@ -220,43 +222,45 @@ export default async function AuditLogPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         {/* Actor */}
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0 ${cfg.dot}`}>
                             {event.actor.charAt(0)}
                           </div>
-                          <span className="text-sm font-semibold text-slate-800">{event.actor}</span>
-                          <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">
+                          <span className="text-[14px] font-bold text-slate-200">{event.actor}</span>
+                          <span className="text-[10px] text-slate-500 bg-[#111] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-[#222]">
                             {event.actorRole}
                           </span>
                         </div>
 
                         {/* Action verb */}
-                        <span className="text-sm text-slate-600">{event.action}</span>
+                        <span className="text-[13px] text-slate-400 mx-1">{event.action}</span>
 
                         {/* Type badge */}
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.labelStyle}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.labelStyle} uppercase tracking-wider`}>
                           {cfg.label}
                         </span>
                       </div>
 
                       {/* Timestamp */}
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-medium text-slate-500">
+                        <p className="text-[12px] font-bold text-slate-400">
                           {formatRelativeTime(event.timestamp)}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
+                        <p className="text-[10px] text-slate-600 mt-0.5 font-medium">
                           {formatFullDate(event.timestamp)}
                         </p>
                       </div>
                     </div>
 
                     {/* Subject + detail */}
-                    <p className="text-xs font-medium text-slate-700 mt-1.5">
-                      {event.subject}
-                    </p>
-                    {event.detail && (
-                      <p className="text-xs text-slate-500 mt-0.5">{event.detail}</p>
-                    )}
+                    <div className="mt-2.5 bg-[#0f0f0f] border border-[#222] rounded-lg p-3 inline-block min-w-[60%]">
+                      <p className="text-[13px] font-bold text-slate-300">
+                        {event.subject}
+                      </p>
+                      {event.detail && (
+                        <p className="text-[12px] text-slate-500 mt-1">{event.detail}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

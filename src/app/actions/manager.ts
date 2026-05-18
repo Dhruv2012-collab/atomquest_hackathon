@@ -17,6 +17,57 @@ export async function updatePlanStatus(planId: string, status: "Approved" | "Rew
     return { success: false, error: error.message }
   }
 
+  // 6. Notifications Integration
+  try {
+    const { data: planData } = await supabase
+      .from("goal_plans")
+      .select("user_id")
+      .eq("id", planId)
+      .single();
+
+    if (planData && planData.user_id) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('name, email, manager_id')
+        .eq('id', planData.user_id)
+        .single();
+        
+      if (userData && userData.manager_id) {
+        const { data: managerData } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', userData.manager_id)
+          .single();
+          
+        if (managerData) {
+          const { sendTeamsNotification, sendEmailNotification } = await import('@/utils/notifications');
+          const eventType = status === "Approved" ? "APPROVED" : "REJECTED";
+          
+          const notificationData = {
+            event: eventType as any,
+            employeeName: userData.name,
+            employeeEmail: userData.email,
+            managerName: managerData.name,
+            managerEmail: managerData.email,
+            planId: planId,
+            deepLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/employee/dashboard`
+          };
+          
+          if (process.env.TEAMS_WEBHOOK_URL) {
+            sendTeamsNotification(process.env.TEAMS_WEBHOOK_URL, notificationData).catch(console.error);
+          }
+          if (process.env.RESEND_API_KEY) {
+            // For approvals/rejections, we usually email the employee, so let's send to managerEmail or employeeEmail
+            // On free resend, you can only email yourself. We'll send it to managerEmail to simulate.
+            sendEmailNotification(process.env.RESEND_API_KEY, notificationData).catch(console.error);
+          }
+        }
+      }
+    }
+  } catch (notifyError) {
+    console.error("Failed to trigger notifications:", notifyError);
+  }
+
   revalidatePath("/manager/dashboard")
   return { success: true }
 }
