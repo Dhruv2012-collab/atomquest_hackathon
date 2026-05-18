@@ -35,8 +35,8 @@ export default async function ManagerApprovalsPage() {
   ];
 
   const allPlans = (plansData && plansData.length > 0) ? plansData : mockPlans;
-  const pending = allPlans.filter((p) => p.status === "Pending_Approval").length;
-  const approved = allPlans.filter((p) => p.status === "Approved").length;
+  const pending = allPlans.filter((p: any) => p.status === "Pending_Approval").length;
+  const approved = allPlans.filter((p: any) => p.status === "Approved").length;
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">

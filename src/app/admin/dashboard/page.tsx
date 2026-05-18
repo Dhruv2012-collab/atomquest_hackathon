@@ -74,18 +74,18 @@ export default async function AdminDashboardPage() {
   const allPlans = dbPlans && dbPlans.length > 0 ? dbPlans : mockPlans as any[];
   const allGoals = dbGoals && dbGoals.length > 0 ? dbGoals : mockGoals as any[];
 
-  const pendingApprovals = allPlans.filter((p) => p.status === "Pending_Approval").length;
-  const approvedPlans = allPlans.filter((p) => p.status === "Approved").length;
-  const reworkPlans = allPlans.filter((p) => p.status === "Rework_Required").length;
+  const pendingApprovals = allPlans.filter((p: any) => p.status === "Pending_Approval").length;
+  const approvedPlans = allPlans.filter((p: any) => p.status === "Approved").length;
+  const reworkPlans = allPlans.filter((p: any) => p.status === "Rework_Required").length;
   const submissionRate = allPlans.length > 0
-    ? Math.round((allPlans.filter(p => p.status !== "Draft").length / totalEmployees) * 100)
+    ? Math.round((allPlans.filter((p: any) => p.status !== "Draft").length / totalEmployees) * 100)
     : 0;
 
-  const completedGoals = allGoals.filter((g) => g.status === "Completed").length;
+  const completedGoals = allGoals.filter((g: any) => g.status === "Completed").length;
   const totalGoals = allGoals.length;
 
-  const totalWeight = allGoals.reduce((s, g) => s + Number(g.weight || 0), 0);
-  const totalScore = allGoals.reduce((s, g) => s + Number(g.calculated_score || 0), 0);
+  const totalWeight = allGoals.reduce((s: number, g: any) => s + Number(g.weight || 0), 0);
+  const totalScore = allGoals.reduce((s: number, g: any) => s + Number(g.calculated_score || 0), 0);
   const orgScore = totalWeight > 0 ? ((totalScore / totalWeight) * 100).toFixed(1) : "0.0";
 
   return (
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
         <CommandTile
           label="Submission Rate"
           value={`${submissionRate}%`}
-          sub={`${allPlans.filter(p => p.status !== "Draft").length} of ${allPlans.length} submitted`}
+          sub={`${allPlans.filter((p: any) => p.status !== "Draft").length} of ${allPlans.length} submitted`}
           icon={TrendingUp}
           accent="bg-[#001a2a] text-blue-400 border border-blue-900/50"
         />

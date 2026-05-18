@@ -52,7 +52,7 @@ export default async function EscalationsPage() {
             <h3 className="font-semibold text-slate-300 text-[13px] uppercase tracking-wider">Critical (HR Level)</h3>
           </div>
           <p className="text-3xl font-bold text-slate-100 mt-2">
-            {logs?.filter(l => l.escalation_level === 3 && l.status === 'Open').length || 0}
+            {logs?.filter((l: any) => l.escalation_level === 3 && l.status === 'Open').length || 0}
           </p>
         </div>
         <div className="bg-[#151515] border border-amber-900/50 rounded-xl p-6 shadow-sm relative hover:border-amber-900 transition-colors">
@@ -63,7 +63,7 @@ export default async function EscalationsPage() {
             <h3 className="font-semibold text-slate-300 text-[13px] uppercase tracking-wider">Manager Pending</h3>
           </div>
           <p className="text-3xl font-bold text-slate-100 mt-2">
-            {logs?.filter(l => l.escalation_level === 2 && l.status === 'Open').length || 0}
+            {logs?.filter((l: any) => l.escalation_level === 2 && l.status === 'Open').length || 0}
           </p>
         </div>
         <div className="bg-[#151515] border border-blue-900/50 rounded-xl p-6 shadow-sm relative hover:border-blue-900 transition-colors">
@@ -74,7 +74,7 @@ export default async function EscalationsPage() {
             <h3 className="font-semibold text-slate-300 text-[13px] uppercase tracking-wider">Employee Overdue</h3>
           </div>
           <p className="text-3xl font-bold text-slate-100 mt-2">
-            {logs?.filter(l => l.escalation_level === 1 && l.status === 'Open').length || 0}
+            {logs?.filter((l: any) => l.escalation_level === 1 && l.status === 'Open').length || 0}
           </p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default async function EscalationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#222]">
-              {logs.map((log) => (
+              {logs.map((log: any) => (
                 <tr key={log.id} className="hover:bg-[#1a1a1a] transition-colors">
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border uppercase tracking-wider ${

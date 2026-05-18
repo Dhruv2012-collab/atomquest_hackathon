@@ -31,11 +31,11 @@ export default async function ManagerAnalyticsPage() {
   const approvedPlans = (plansData && plansData.length > 0) ? plansData : mockApprovedPlans;
 
   // Calculate dynamic stats for the tiles
-  const totalReports = new Set(approvedPlans.map(p => p.user_id)).size;
-  const activeGoals = approvedPlans.reduce((acc, p) => acc + (p.goals?.length || 0), 0);
+  const totalReports = new Set(approvedPlans.map((p: any) => p.user_id)).size;
+  const activeGoals = approvedPlans.reduce((acc: number, p: any) => acc + (p.goals?.length || 0), 0);
   
   let totalScore = 0, totalWeight = 0, completedGoals = 0;
-  approvedPlans.forEach(p => {
+  approvedPlans.forEach((p: any) => {
     p.goals?.forEach((g: any) => {
       totalScore += Number(g.calculated_score || 0);
       totalWeight += Number(g.weight || 0);
@@ -46,7 +46,7 @@ export default async function ManagerAnalyticsPage() {
   const avgScore = totalWeight > 0 ? ((totalScore / totalWeight) * 100).toFixed(1) : "0.0";
   const checkinRate = activeGoals > 0 ? ((completedGoals / activeGoals) * 100).toFixed(1) : "0.0";
 
-  const teamPerformance = approvedPlans.map(plan => {
+  const teamPerformance = approvedPlans.map((plan: any) => {
     const goals = plan.goals || [];
     const tWeight = goals.reduce((acc: number, g: any) => acc + Number(g.weight || 0), 0);
     const tScore = goals.reduce((acc: number, g: any) => acc + Number(g.calculated_score || 0), 0);

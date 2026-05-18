@@ -1,12 +1,21 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createMockSupabaseClient } from './mockClient'
 
 export async function createClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    console.warn("Supabase URL or Anon Key not configured. Falling back to high-fidelity mock client.");
+    return createMockSupabaseClient() as any;
+  }
+
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -29,11 +38,19 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !adminKey) {
+    console.warn("Supabase URL or Service Role Key not configured. Falling back to high-fidelity mock client.");
+    return createMockSupabaseClient() as any;
+  }
+
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    url,
+    adminKey,
     {
       cookies: {
         getAll() {
@@ -52,3 +69,4 @@ export async function createAdminClient() {
     }
   )
 }
+

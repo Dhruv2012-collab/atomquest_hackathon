@@ -20,7 +20,7 @@ export async function runEscalationEngine() {
     .select("user_id, status")
     .eq("period", "Q1 2026")
 
-  const planUserIds = new Set(plans?.map(p => p.user_id))
+  const planUserIds = new Set(plans?.map((p: any) => p.user_id))
   const escalations = []
 
   // Check missing submissions
@@ -38,9 +38,9 @@ export async function runEscalationEngine() {
   }
 
   // 2. Rule: Manager hasn't approved goals
-  const pendingPlans = plans?.filter(p => p.status === "Pending_Approval") || []
+  const pendingPlans = plans?.filter((p: any) => p.status === "Pending_Approval") || []
   for (const p of pendingPlans) {
-    const emp = employees?.find(e => e.id === p.user_id)
+    const emp = employees?.find((e: any) => e.id === p.user_id)
     if (emp && emp.manager_id) {
       escalations.push({
         user_id: emp.manager_id,
