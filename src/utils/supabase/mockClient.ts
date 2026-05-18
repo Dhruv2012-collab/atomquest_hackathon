@@ -124,7 +124,16 @@ export function createMockSupabaseClient() {
       return this;
     }
 
+    limit(count: number) {
+      return this;
+    }
+
     single() {
+      const data = getMockData(this.tableName);
+      return Promise.resolve({ data: Array.isArray(data) ? data[0] : data, error: null });
+    }
+
+    maybeSingle() {
       const data = getMockData(this.tableName);
       return Promise.resolve({ data: Array.isArray(data) ? data[0] : data, error: null });
     }
@@ -156,6 +165,10 @@ export function createMockSupabaseClient() {
     }
 
     single() {
+      return Promise.resolve({ data: { id: "mock-id-123" }, error: null });
+    }
+
+    maybeSingle() {
       return Promise.resolve({ data: { id: "mock-id-123" }, error: null });
     }
 
